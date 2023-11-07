@@ -1,26 +1,22 @@
 package com.example.login_database;
 
 import androidx.appcompat.app.AppCompatActivity;
+
+import android.content.ContentValues;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
-
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
-import java.util.HashMap;
-import java.util.List;
-
 public class MainActivity extends AppCompatActivity {
 
-    private EditText UsuarioEditText, ContrasenaEditText;
+    private EditText txt_login_usuario, txt_login_password;
     private Button EntrarButton;
-    //nuevas variables
-    private EditText txt_login_password, txt_login_usuario;
-    private List lista;
     private int usuario;
 
     @Override
@@ -28,52 +24,50 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        //UsuarioEditText = findViewById(R.id.usuarioTxt);
+        txt_login_usuario = findViewById(R.id.FirusuarioTxt);
+        txt_login_password = findViewById(R.id.Fircontrasenatxt);
+        EntrarButton = findViewById(R.id.Firentrarbtn);
 
-        EntrarButton = (Button) findViewById(R.id.Firentrarbtn);
         EntrarButton.setOnClickListener(new View.OnClickListener() {
+
             @Override
             public void onClick(View v) {
+                Log.d("MainActivity", "Botón 'Entrar' presionado");
                 DataBase conexion = new DataBase(MainActivity.this, DataBase.DB_NAME, null, DataBase.v_db);
                 SQLiteDatabase db = conexion.getWritableDatabase();
-                String Consulta="";
-                if (db!= null){
-                    try {
-                        Consulta= "SELECT idUsuario FROM Uduarios WHERE User = '" + txt_login_usuario.getText() +
-                                "'AND Pass '" + txt_login_password.getText()+ "'";
-                        Cursor c = db.rawQuery(Consulta, null);
+                String Consulta = "SELECT id_user FROM " + StringBasedeDatos.USUARIOS.NOMBRE_TABLA +
+                        " WHERE " + StringBasedeDatos.USUARIOS.CAMPO_NAMEUSER + " = '" + txt_login_usuario.getText() +
+                        "' AND " + StringBasedeDatos.USUARIOS.CAMPO_PASSWORD + " = '" + txt_login_password.getText() + "'";
 
-                        if (c.getCount()>0) {
+                if (db != null) {
+                    try {
+                        Cursor c = db.rawQuery(Consulta, null);
+                        Log.d("MainActivity", "cursor jalando");
+                        if (c.getCount() > 0) {
                             while (c.moveToNext()) {
-                                int column = c.getColumnIndex("iduser");
+                                int column = c.getColumnIndex("id_user");
                                 usuario = Integer.parseInt(c.getString(column));
                             }
                             if (usuario != 0) {
-                                Toast.makeText(MainActivity.this, "Bienvenido" + txt_login_usuario.getText(), Toast.LENGTH_SHORT).show();
+                                Log.d("MainActivity", "Usuario válido");
+                                Toast.makeText(MainActivity.this, "Bienvenido " + txt_login_usuario.getText(), Toast.LENGTH_SHORT).show();
                                 Intent i = new Intent(MainActivity.this, SecondActivity.class);
                                 startActivity(i);
                             } else {
-                                Toast.makeText(MainActivity.this, "Usuario invalido" + usuario, Toast.LENGTH_SHORT).show();
+                                Log.d("MainActivity", "Usuario inválido");
+                                Toast.makeText(MainActivity.this, "Usuario inválido", Toast.LENGTH_SHORT).show();
                             }
                         }
-                    }
-                    catch(Exception e){
+                        c.close(); 
+                    } catch (Exception e) {
+                        Log.e("MainActivity", "Error al acceder a la base de datos", e);
                         Toast.makeText(MainActivity.this, "Problemas al acceder a la base de datos", Toast.LENGTH_SHORT).show();
+                    } finally {
+                        db.close();
                     }
-                }
-                conexion.close();
 
+                }
             }
         });
     }
-            public void AbrirVentana (View view){
-
-
-
-    }
 }
-
-
-
-
-
